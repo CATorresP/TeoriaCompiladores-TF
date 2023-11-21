@@ -12,12 +12,12 @@
 class  ScriptExprParser : public antlr4::Parser {
 public:
   enum {
-    T__0 = 1, INT = 2, ID = 3, PATH = 4, WILDCARD = 5, STR = 6, ENDL = 7, 
-    WS = 8
+    T__0 = 1, T__1 = 2, T__2 = 3, INT = 4, ID = 5, PATH = 6, WILDCARD = 7, 
+    STR = 8, ENDL = 9, WS = 10
   };
 
   enum {
-    RuleScript = 0, RuleCmdCall = 1, RuleArg = 2
+    RuleProgram = 0, RuleLine = 1, RuleCmd = 2, RuleCmdCall = 3, RuleArg = 4
   };
 
   explicit ScriptExprParser(antlr4::TokenStream *input);
@@ -37,15 +37,17 @@ public:
   antlr4::atn::SerializedATNView getSerializedATN() const override;
 
 
-  class ScriptContext;
+  class ProgramContext;
+  class LineContext;
+  class CmdContext;
   class CmdCallContext;
   class ArgContext; 
 
-  class  ScriptContext : public antlr4::ParserRuleContext {
+  class  ProgramContext : public antlr4::ParserRuleContext {
   public:
-    ScriptContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    ProgramContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    CmdCallContext *cmdCall();
+    LineContext *line();
     antlr4::tree::TerminalNode *ENDL();
     antlr4::tree::TerminalNode *EOF();
 
@@ -54,7 +56,65 @@ public:
    
   };
 
-  ScriptContext* script();
+  ProgramContext* program();
+
+  class  LineContext : public antlr4::ParserRuleContext {
+  public:
+    LineContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    LineContext() = default;
+    void copyFrom(LineContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  CmdLineContext : public LineContext {
+  public:
+    CmdLineContext(LineContext *ctx);
+
+    CmdContext *cmd();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  LineContext* line();
+
+  class  CmdContext : public antlr4::ParserRuleContext {
+  public:
+    CmdContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    CmdContext() = default;
+    void copyFrom(CmdContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  CmdCallLineContext : public CmdContext {
+  public:
+    CmdCallLineContext(CmdContext *ctx);
+
+    CmdCallContext *cmdCall();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  CmdPipeLineContext : public CmdContext {
+  public:
+    CmdPipeLineContext(CmdContext *ctx);
+
+    std::vector<CmdCallContext *> cmdCall();
+    CmdCallContext* cmdCall(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  CmdContext* cmd();
 
   class  CmdCallContext : public antlr4::ParserRuleContext {
   public:
@@ -67,6 +127,14 @@ public:
     virtual size_t getRuleIndex() const override;
 
    
+  };
+
+  class  ExitCallContext : public CmdCallContext {
+  public:
+    ExitCallContext(CmdCallContext *ctx);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   class  FileExecContext : public CmdCallContext {

@@ -19,13 +19,21 @@ public:
   /**
    * Visit parse trees produced by ScriptExprParser.
    */
-    virtual std::any visitScript(ScriptExprParser::ScriptContext *context) = 0;
+    virtual std::any visitProgram(ScriptExprParser::ProgramContext *context) = 0;
+
+    virtual std::any visitCmdLine(ScriptExprParser::CmdLineContext *context) = 0;
+
+    virtual std::any visitCmdCallLine(ScriptExprParser::CmdCallLineContext *context) = 0;
+
+    virtual std::any visitCmdPipeLine(ScriptExprParser::CmdPipeLineContext *context) = 0;
 
     virtual std::any visitSysCmdCall(ScriptExprParser::SysCmdCallContext *context) = 0;
 
     virtual std::any visitFileExec(ScriptExprParser::FileExecContext *context) = 0;
 
     virtual std::any visitCdCmdCall(ScriptExprParser::CdCmdCallContext *context) = 0;
+
+    virtual std::any visitExitCall(ScriptExprParser::ExitCallContext *context) = 0;
 
     virtual std::any visitArgId(ScriptExprParser::ArgIdContext *context) = 0;
 

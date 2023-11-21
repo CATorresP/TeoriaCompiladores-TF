@@ -12,8 +12,8 @@
 class  ScriptExprLexer : public antlr4::Lexer {
 public:
   enum {
-    T__0 = 1, INT = 2, ID = 3, PATH = 4, WILDCARD = 5, STR = 6, ENDL = 7, 
-    WS = 8
+    T__0 = 1, T__1 = 2, T__2 = 3, INT = 4, ID = 5, PATH = 6, WILDCARD = 7, 
+    STR = 8, ENDL = 9, WS = 10
   };
 
   explicit ScriptExprLexer(antlr4::CharStream *input);

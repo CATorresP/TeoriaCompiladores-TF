@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <termios.h>
 
 
 #include "ScriptExprLexer.h"
@@ -30,10 +31,19 @@ class Shell : ScriptExprBaseVisitor {
     fs::path home_path;
     void printCurrentPath();
 private:
+    // basic
+    void commandExec(const std::vector<std::string>&);
     // visitor
-    std::any visitScript(ScriptExprParser::ScriptContext*);
+    std::any visitProgram(ScriptExprParser::ProgramContext*);
+    
+    std::any visitCmdLine(ScriptExprParser::CmdLineContext*);
+    
+    std::any visitCmdCallLine(ScriptExprParser::CmdCallLineContext*);
+    std::any visitCmdPipeLine(ScriptExprParser::CmdPipeLineContext*);
+
     std::any visitSysCmdCall(ScriptExprParser::SysCmdCallContext*);
     std::any visitCdCmdCall(ScriptExprParser::CdCmdCallContext*);
+    
     std::any visitArgId(ScriptExprParser::ArgIdContext*);
     std::any visitArgPath(ScriptExprParser::ArgPathContext*);
     std::any visitArgWildcard(ScriptExprParser::ArgWildcardContext*);
@@ -48,6 +58,8 @@ public:
     int commandCall(const std::vector<std::string>&);
     std::vector<std::string> getWildcard(std::string&);
 };
+
+
 //*****************************************************************
 // SHELL
 //*****************************************************************
@@ -71,26 +83,22 @@ Shell::Shell() {
 Shell::~Shell() { }
 
 void Shell::run() {
+    std::string command_line;
 
     while (true) {
-
-        std::string command_line;
+        command_line = "";
         this->printCurrentPath();
         std::cout << " >>";
         std::getline(std::cin, command_line);
-        
-        // Lectura del visitor
+        if (command_line == "exit") {
+            std::cout << "Termino el shell";
+            break;
+        }
         antlr4::ANTLRInputStream input(command_line);
         ScriptExprLexer lexer(&input);
         antlr4::CommonTokenStream tokens(&lexer);
         ScriptExprParser parser(&tokens);
-        auto tree = parser.script();
-        this->visitScript(tree);
-        
-        // Condiciones de continuar
-        if (command_line == "exit")
-            break;
-        //std::cout << "Línea ingresada: " << command_line << std::endl;
+        this->visitProgram(parser.program());
     }
 }
 
@@ -118,44 +126,40 @@ int Shell::cd(const std::string cd_path) {
     }
     return 0;
 }
-int Shell::commandCall(const std::vector<std::string>& args) {
+void Shell::commandExec(const std::vector<std::string>& args) {
     static const char cmnd_home[] = "/usr/bin/";
     std::string file_path = cmnd_home + args[0];
     std::size_t size = args.size();
     char** cargs = new char*[size + 1];
-    pid_t pid;
 
     for (int i = 0; i < size; i++) {
         cargs[i] = const_cast<char*>(args[i].c_str());
     }
     cargs[size] = nullptr;
 
-    pid = fork();
+    int status_code = execvp(file_path.c_str(), cargs);
+    delete[] cargs;
+    exit(1);
+    return;
+}
+int Shell::commandCall(const std::vector<std::string>& args) {
+    pid_t pid;
 
+    pid = fork();
+    
     if (pid < 0) {
         this->errmessage("shell: couldn't init a new process.");
         exit(1);
     } else if (pid == 0) {
-        int status_code = execvp(file_path.c_str(), cargs);
-        std::cout << "shell: command not found: " << args[0];
+        commandExec(args);
+        std::cout << "shell: command not found: " << args[0] << std::endl;
         exit(1);
     } else {
-        // El nodo padre recibe un pid positivo
         int estado;
         waitpid(pid, &estado, 0);
-        /*if (pid != 0) {
-            for (int i = 0; i < size; i++) {
-                delete cargs[i];
-                cargs[i] = nullptr;
-            }
-            delete[] cargs;
-            cargs = nullptr;
-        }*/
 
         if (WIFEXITED(estado) && WEXITSTATUS(estado) == 0) {
-            std::cout << "Ok." << std::endl;
         } else {
-            std::cerr << "Error en la ejecución." << std::endl;
         }
         return 0;
     }
@@ -210,37 +214,32 @@ std::vector<std::string> Shell::wildcardToArgs(std::string& wildcard) {
             }
         }
     }
-
-    return args;
-}
-
-//*****************************************************************
-// COMMAND ARGUMENTS
-//*****************************************************************
-Shell::CommandArgs::CommandArgs(const std::vector<std::string>& args) {
-    this->size = args.size();
-    this->args = new char*[this->size + 1];
-    for (int i = 0; i < this->size; i++) {
-        this->args[i] = const_cast<char*>(args[i].c_str());
-    }
-    this->args[this->size] = nullptr;
-}
-Shell::CommandArgs::~CommandArgs() {
-    for (int i = 0; i < this->size; i++) {
-        delete this->args[i];
-    }
-    delete[] this->args;
-}
-char** Shell::CommandArgs::CommandArgs::get() {
     return args;
 }
 //*****************************************************************
-// SCRIPT READER
+// VISITOR
 //*****************************************************************
-std::any Shell::visitScript(ScriptExprParser::ScriptContext* ctx) {
+std::any Shell::visitProgram(ScriptExprParser::ProgramContext* ctx) {
     visitChildren(ctx);
     return 0;
 }
+
+std::any Shell::visitCmdLine(ScriptExprParser::CmdLineContext* ctx) {
+    int status;
+    int pid = fork();
+    
+    if (pid < 0) {
+        this->errmessage("shell: couldn't init a new process.");
+        exit(1);
+    } else if (pid == 0) {
+        visit(ctx->cmd());
+        exit(1);
+    } else {
+        waitpid(pid, &status, 0);
+    }
+    return status;
+}
+
 std::any Shell::visitSysCmdCall(ScriptExprParser::SysCmdCallContext* ctx) {
     std::vector<std::string> args;
     args.push_back(ctx->ID()->getText());

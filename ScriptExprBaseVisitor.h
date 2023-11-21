@@ -15,7 +15,19 @@
 class  ScriptExprBaseVisitor : public ScriptExprVisitor {
 public:
 
-  virtual std::any visitScript(ScriptExprParser::ScriptContext *ctx) override {
+  virtual std::any visitProgram(ScriptExprParser::ProgramContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitCmdLine(ScriptExprParser::CmdLineContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitCmdCallLine(ScriptExprParser::CmdCallLineContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitCmdPipeLine(ScriptExprParser::CmdPipeLineContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -28,6 +40,10 @@ public:
   }
 
   virtual std::any visitCdCmdCall(ScriptExprParser::CdCmdCallContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExitCall(ScriptExprParser::ExitCallContext *ctx) override {
     return visitChildren(ctx);
   }
 
