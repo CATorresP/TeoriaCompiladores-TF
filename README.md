@@ -49,7 +49,9 @@ Este informe detalla la estructura y funcionalidades clave de la shell implement
  
 Objetivos:
 Se ha propuesto diseñar e implementar una shell con las siguientes características:
+
 Lenguaje básico de scripting
+
 Posibilidad de ejecutar en modo “headless” un script 
 
 Tratamiento de variables de entorno, acceso y definición
