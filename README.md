@@ -129,6 +129,7 @@ Creación del Repositorio:
 
 Primero que todo se creó el repositorio para desarrollar el trabajo en grupo y dividirnos las distintas tareas.
 
+![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/60973c8c-4e81-4802-8904-c42aa288e68f)
 
 
 
