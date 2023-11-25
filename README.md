@@ -29,11 +29,17 @@ Noviembre 2023
 
 
 1.Resumen
+
 2.Objetivo
+
 3.Marco Teórico 
+
 4.Metodología
+
 5.Comunicación
+
 7.Conclusiones
+
 
 
 Introducción:
