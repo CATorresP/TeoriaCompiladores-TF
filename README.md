@@ -135,6 +135,7 @@ Primero que todo se creó el repositorio para desarrollar el trabajo en grupo y 
 
 
 Después de ello se especificó la gramática, la cual se hizo por medio del archivo “ScriptExpr.g4”  y haciendo uso de ANTLR para crear su gramática respectiva la cual a su vez nos da soporte para scripting.
+
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/d46928e9-11f0-4ef0-b489-33812cb5b373)
 
 
@@ -172,6 +173,7 @@ Muestra el prompt interactivo personalizado por medio de Shell::printCurrentPath
 Gestión de Rutas y WildCards
 
 Esta parte se encarga  de expandir las wildcards y gestionar las rutas por medio de Shell::wildcardToArgs(std::string& wildcard)
+
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/a29b51e6-0527-4d84-998a-e78d09351ae3)
 
 Expresiones Regulares y características adicionales
@@ -182,6 +184,7 @@ Comunicación:
 
 Para la comunicación en equipo se hicieron reuniones por medio de microsoft teams para coordinar distintos apartados del proyecto. Así mismo, se discutieron distintas partes para la realización del mismo. 
 
+
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/10d7598b-18bd-43f1-9df1-9ba5f651663f)
 
 
@@ -189,13 +192,16 @@ Para la comunicación en equipo se hicieron reuniones por medio de microsoft tea
 
 
 Así mismo se dividieron las tareas por medio de aplicaciones como Trello, las cuales nos ayudaron a organizar el proyecto de mejor manera.
+
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/2453c9fe-7d56-4fe9-8a03-b7a92646673b)
 
 Así mismo hay se puede visualizar los  commits que se realizaron al repositorio, el cual también ayuda en la organización del trabajo en equipo
+
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/2cf0d476-f3c9-494c-a0b3-fea748297259)
 
 
 Así mismo hay se puede visualizar los  commits que se realizaron al repositorio, el cual también ayuda en la organización del trabajo en equipo
+
 
 ![image](https://github.com/CATorresP/TeoriaCompiladores-TF/assets/81259737/7bbd61df-0593-4b7b-ab6d-ef1334a31c94)
 
