@@ -27,12 +27,12 @@ private:
     // basic
     void commandExec(const std::vector<std::string>&);
     // visitor
-    std::any visitProgram(ScriptExprParser::ProgramContext*);
+    std::any visitScript(ScriptExprParser::ScriptContext*);
     
-    std::any visitCmdLine(ScriptExprParser::CmdLineContext*);
+    std::any visitCmdStat(ScriptExprParser::CmdStatContext*);
     
-    std::any visitCmdCallLine(ScriptExprParser::CmdCallLineContext*);
-    std::any visitCmdPipeLine(ScriptExprParser::CmdPipeLineContext*);
+    std::any visitCmdCall(ScriptExprParser::CmdCallContext*);
+    std::any visitCmdPipe(ScriptExprParser::CmdPipeContext*);
 
     std::any visitSysCmdCall(ScriptExprParser::SysCmdCallContext*);
     std::any visitCdCmdCall(ScriptExprParser::CdCmdCallContext*);
@@ -89,7 +89,7 @@ void Shell::run() {
         ScriptExprLexer lexer(&input);
         antlr4::CommonTokenStream tokens(&lexer);
         ScriptExprParser parser(&tokens);
-        this->visitProgram(parser.program());
+        this->visitScript(parser.script());
     }
 }
 
@@ -176,49 +176,105 @@ int Shell::commandCall(const std::vector<std::string>& args) {
 //*****************************************************************
 // VISITOR
 //*****************************************************************
-std::any Shell::visitProgram(ScriptExprParser::ProgramContext* ctx) {
+std::any Shell::visitScript(ScriptExprParser::ScriptContext* ctx) {
     visitChildren(ctx);
     return 0;
 }
 
-std::any Shell::visitCmdLine(ScriptExprParser::CmdLineContext* ctx) {
-    return visit(ctx->cmd());
+std::any Shell::visitCmdStat(ScriptExprParser::CmdStatContext* ctx) {
+    return visit(ctx->cmdStatement());
 }
 
-std::any Shell::visitCmdCallLine(ScriptExprParser::CmdCallLineContext* ctx) {
-    return visit(ctx->cmdCall());
+std::any Shell::visitCmdCall(ScriptExprParser::CmdCallContext* ctx) {
+    return visit(ctx->commandCall());
 }
 
-std::any Shell::visitCmdPipeLine(ScriptExprParser::CmdPipeLineContext* ctx) {
-    std::cout << "PIPELINE\n";
-    //auto commands = ctx->cmdCall();
-    const char* commands[] = {"ls", "grep cpp", "wc -l"};
-    std::size_t ncommands = 3;//commands.size();
-    FILE* pipes[ncommands];
+std::any Shell::visitCmdPipe(ScriptExprParser::CmdPipeContext* ctx) {
+    /*
+    for (auto command: ctx->commandCall()) {
+
+        for (auto arg: command->)
+        std::vector<ScriptExprParser::CommandCallContext*> commands = ctx->commandCall();
+    }
+    std::size_t ncommands = commands.size();
+    int pipes[2][ncommands];
+
     for (int i = 0; i < ncommands; ++i) {
-        if (i == ncommands - 1) 
-            pipes[i] = popen(commands[i], "w");
-        else
-            pipes[i] = popen(commands[i], "r");
-        if (!pipes[i]) {
-            std::cerr << "shell: couldn't init a pipe " << i << " ." << std::endl;
+        if (pipe(pipes[i]) == -1) {
+            perror("pipe");
+            return -1;
         }
     }
-    char buffer[128];
-    std::string resultado = "";
-    std::cout << "Leyendo el buffer\n";
 
-    FILE* lastpipe = pipes[ncommands - 1];
-    while (fgets(buffer, sizeof(buffer), lastpipe) != nullptr) {
-        resultado += buffer;
+    int pid;
+    pid = fork();
+    if (pid < 0) {
+        std::cerr << "shell: couldn't init a new process.";
+        exit(-1);
+    } else if (pid == 0) {
+        for (int i = ncommands - 1; i >= 0; --i) {
+            pid = fork();
+            if (pid < 0) {
+                std::cerr << "shell: couldn't init a new process.";
+                exit(-1);
+            } else if (pid == 0) {
+                if (i == 1) {
+                    for (int j = 1; j < ncommands; ++j) {
+                        close(pipes[j][0]);
+                        close(pipes[j][1]);
+                    }
+                    std::cout << i << "-> output -> 0 write\n";
+                    close(pipes[0][0]);
+                    dup2(pipes[0][1], STDOUT_FILENO);
+                    commandExec(commands[i]);
+                    perror("execvp");
+                    exit(-1);
+                }
+            } else {
+                for (int j = 0; j < ncommands; ++j) {
+                    if (j != i - 1)
+                        close(pipes[j][0]);
+                    if (j != i)
+                       close(pipes[j][1]);
+                }
+                std::cout << i << "<- input <- " << i - 1 << " read\n";
+                std::cout << i << "-> output -> " << i << " write\n";
+                dup2(pipes[i - 1][0], STDIN_FILENO);
+                dup2(pipes[i][1], STDOUT_FILENO);
+
+                std::cerr << commands[i][0] << std::endl;
+                commandExec(commands[i]);
+                perror("execvp");
+                close(pipes[i - 1][0]);
+                close(pipes[i][1]);
+
+                std::cerr << "shell: command not found: " + commands[i][0] + "\n";
+                exit(-1);
+            }
+        }
+    }
+    std::cout << "Terminaron iteraciones\n";
+    const int* ret_pipe = pipes[ncommands - 1];
+    close(ret_pipe[1]);
+    char buffer[4096];
+    int estado;
+    std::stringstream cmdout;
+    ssize_t nbytes;
+    std::cout << "Leyendo...\n";
+
+    while ((nbytes = read(ret_pipe[0], buffer, sizeof(buffer))) > 0) {
+        cmdout.write(buffer, nbytes);
     }
 
-    for (int i = 0; i < ncommands; ++i) {
-        pclose(pipes[i]);
-    }
+    pid_t last_pid = waitpid(-1, &estado, 0);
 
-    std::cout << "Cerrando procesos\n";
-    std::cout << "Resultado:\n" << resultado;
+    if (WIFEXITED(estado)) {
+        CMD_STATUS =  WEXITSTATUS(estado);
+        std::cout << "RETURN:\n" << cmdout.str() << "\n$() = " << CMD_STATUS << std::endl;
+    } else {
+        std::cout << "shell: command execution error\n";
+    }
+    return 0;*/
     return 0;
 }
 
@@ -235,7 +291,6 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
 }
 
 std::any Shell::visitSysCmdCall(ScriptExprParser::SysCmdCallContext* ctx) {
-    //std::cout << "bin Command\n";
     std::vector<std::string> args;
     args.push_back(ctx->ID()->getText());
     for (auto arg : ctx->arg()) {
@@ -246,7 +301,6 @@ std::any Shell::visitSysCmdCall(ScriptExprParser::SysCmdCallContext* ctx) {
 }
 
 std::any Shell::visitCdCmdCall(ScriptExprParser::CdCmdCallContext* ctx) {
-    //std::cout << "cd Command\n";
     std::vector<std::string> args;
     for (auto arg : ctx->arg()) {
         args.push_back(std::any_cast<std::string>(visit(arg)));
@@ -270,7 +324,6 @@ std::any Shell::visitArgPath(ScriptExprParser::ArgPathContext* ctx) {
 }
 
 std::any Shell::visitArgWildcard(ScriptExprParser::ArgWildcardContext* ctx) {
-    //std::cout << "wildcard\n";
     std::string wildcard = ctx->WILDCARD()->getText();
     std::string args = "";
     std::string r = "";
@@ -305,7 +358,7 @@ std::any Shell::visitArgWildcard(ScriptExprParser::ArgWildcardContext* ctx) {
             prev_ast = false;
         }
     }
-    std::cout << "regex:" << r << std::endl << std::endl;
+    //std::cout << "regex:" << r << std::endl << std::endl;
     std::regex wildcard_regex(r); 
 
     if (recursive) {
